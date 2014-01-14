@@ -1,32 +1,37 @@
+## Demonstrate: Third Step for the iPlant Collaborative Known-Truth Pipeline
+## Author: Dustin A. Landers
+
 Demonstrate <- function(dir, make.AUC.plot=TRUE, AUC.plot.title="Mean AUC By Population Structure and Heritability",
-	make.MAE.plot=TRUE, MAE.plot.title="Mean MAE By Population Structure and Heritability") {
+	make.MAE.plot=TRUE, MAE.plot.title="Mean MAE By Population Structure and Heritability",herit.strings=list("_03_","_04_","_06_")
+	,herit.values=list(0.3,0.4,0.6),struct.strings=list("PheHasStruct","PheNPStruct"),struct.values=list(TRUE,FALSE)) {
 
 	makeFiles <- function(dir) {
 
 		readFiles <- function(dir) {
 			setwd(dir)
 			files <- (Sys.glob("*.txt"))
-			listOfFiles <- lapply(files, function(x) read.table(x, header = TRUE))
+			listOfFiles <- lapply(files, function(x) read.table(x, header=TRUE))
 			return(listOfFiles)
 		}
 
 		createHeritLabel <- function(data) {
 			newData <- data
-			herit03 <- sapply(data$Name,function(x) grepl("_03_",x))
-			herit04 <- sapply(data$Name,function(x) grepl("_04_",x))
-			herit06 <- sapply(data$Name,function(x) grepl("_06_",x))
-			newData$Herit <- ifelse(herit03,0.3,NA)
-			newData$Herit <- ifelse(herit04,0.4,newData$Herit)
-			newData$Herit <- ifelse(herit06,0.6,newData$Herit)
+			newData$Herit <- NA
+			first <- TRUE
+			for (i in 1:length(herit.strings)) {
+				newData$Herit <- ifelse(sapply(data$Name,function(x) grepl(herit.strings[[i]],x)),
+					herit.values[[i]],newData$Herit)
+			}
 			return(newData)
 		}
 
 		createStructureLabel <- function(data) {
 			newData <- data
-			struct <- sapply(data$Name,function(x) grepl("PheHasStruct",x))
-			none <- sapply(data$Name,function(x) grepl("PheNPStruct",x))
-			newData$Structure <- ifelse(struct,TRUE,NA)
-			newData$Structure <- ifelse(none,FALSE,newData$Structure)
+			newData$Structure <- NA
+			for (i in 1:length(struct.strings)) {
+				newData$Structure <- ifelse(sapply(data$Name,function(x) grepl(struct.strings[[i]],x)),
+					struct.values[[i]],newData$Structure)
+			}
 			return(newData)	
 		}
 
@@ -48,7 +53,7 @@ Demonstrate <- function(dir, make.AUC.plot=TRUE, AUC.plot.title="Mean AUC By Pop
 	for (i in 2:length(myFiles)) {
 		totalDataSet <- rbind(totalDataSet, myFiles[[i]])
 	}
-
+	
 	require(sciplot)
 
 	if (make.AUC.plot) {
