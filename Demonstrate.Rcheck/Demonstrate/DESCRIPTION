@@ -1,0 +1,14 @@
+Package: Demonstrate
+Type: Package
+Depends: sciplot
+Title: Demonstrate takes outputs from the Validate known-truth pipeline
+        for iPlant Collaborative and produces a single data set and
+        graphics.
+Version: 1.0
+Date: 2014-01-14
+Author: Dustin A. Landers
+Maintainer: Dustin A. Landers <dustin.landers@gmail.com>
+Description: Demonstrate is the third step in the Validate known-truth pipeline for iPlant collaborative. It produces a single data set from several Validate results files (produced at iPlantcollaborative.org as well as two graphics showing differences in a GWAS/QTL applications performance under varying heritability and population structure.
+License: GPL V2
+Packaged: 2014-01-14 18:38:23 UTC; dustin
+Built: R 3.0.2; ; 2014-01-14 18:38:35 UTC; unix
