@@ -1,5 +1,3 @@
-require(sciplot)
-
 Demonstrate <- function(dir, make.AUC.plot=TRUE, AUC.plot.title="Mean AUC By Population Structure and Heritability",
 	make.MAE.plot=TRUE, MAE.plot.title="Mean MAE By Population Structure and Heritability") {
 
@@ -50,6 +48,8 @@ Demonstrate <- function(dir, make.AUC.plot=TRUE, AUC.plot.title="Mean AUC By Pop
 	for (i in 2:length(myFiles)) {
 		totalDataSet <- rbind(totalDataSet, myFiles[[i]])
 	}
+	
+	require(sciplot)
 
 	if (make.AUC.plot) {
 		pdf(file=AUC.plot.title)
