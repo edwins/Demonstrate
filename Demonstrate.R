@@ -56,8 +56,6 @@ Demonstrate <- function(dir, make.AUC.plot=TRUE, AUC.plot.title="Mean AUC By Pop
 	
 	require(sciplot)
 
-	require(sciplot)
-
 	if (make.AUC.plot) {
 		pdf(file=AUC.plot.title)
 		lineplot.CI(totalDataSet$Herit,totalDataSet$AUC,totalDataSet$Structure,main=AUC.plot.title,
