@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 ## Demonstrate: Third Step for the iPlant Collaborative Known-Truth Pipeline
 ## Author: Dustin A. Landers
 
-=======
->>>>>>> 75032b96526901710f526c00a71d974ac5ce3428
 Demonstrate <- function(dir, make.AUC.plot=TRUE, AUC.plot.title="Mean AUC By Population Structure and Heritability",
 	make.MAE.plot=TRUE, MAE.plot.title="Mean MAE By Population Structure and Heritability",herit.strings=list("_03_","_04_","_06_")
 	,herit.values=list(0.3,0.4,0.6),struct.strings=list("PheHasStruct","PheNPStruct"),struct.values=list(TRUE,FALSE)) {
