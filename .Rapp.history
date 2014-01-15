@@ -1,0 +1,545 @@
+test = read.table(file="simulation10.txt")
+test
+nrow(test)
+35/3235
+8/(3235-8)
+test <- read.table(file='/Users/dustin/Desktop/Desktop/My iPlant Stuff/Syngenta/ns03.txt')
+nrow(test)
+780158-35
+35/780123
+options(scipen=999)
+35/780123
+source("/Users/dustin/Desktop/SyngentaReportData/analysis2.R")
+K
+lineplot.CI(K$Herit,K$AUC,K$Struct)
+K$AUC[which(K$Herit==0.3)]
+K$AUC[which(K$Herit==0.3 & K$Struct=="None")]
+LMM.03 <- read.table(file="LMM-03-NoMissing-Results.txt",header=TRUE)#
+LMM.04 <- read.table(file="LMM-04-Results.txt",header=TRUE)#
+LMM.06 <- read.table(file="LMM-06-NoMissing-Results.txt",header=TRUE)
+LMM.03$Name
+which.type <- function(name) {#
+	name <- as.character(name)#
+	name <- unlist(strsplit(name, split="_", fixed=TRUE))#
+	if ("PheHasStruct" %in% name) {#
+		return("S")#
+	} else {#
+		return("N")#
+	}#
+}#
+#
+is.s <- function(name) {#
+	which.type(name) == "S"#
+}#
+#
+is.n <- function(name) {#
+	which.type(name) == "N"#
+}#
+#
+break.it.up.s <- function(data) {#
+	name <- eval(parse(text=paste(data, "$Name", sep="")))#
+	new.data <- eval(parse(text=data))[sapply(name, is.s), ]#
+	return(new.data)#
+}#
+#
+break.it.up.n <- function(data) {#
+	name <- eval(parse(text=paste(data, "$Name", sep="")))#
+	new.data <- eval(parse(text=data))[sapply(name, is.n), ]#
+	return(new.data)#
+}
+LMM.03.S <- break.it.up.s("LMM.03")#
+LMM.03.S$Struct <- "Structure"#
+LMM.03.S$Herit <- 0.3#
+LMM.03.S$Type <- "FaST-LMM"#
+LMM.04.S <- break.it.up.s("LMM.04")#
+LMM.04.S$Struct <- "Structure"#
+LMM.04.S$Herit <- 0.4#
+LMM.04.S$Type <- "FaST-LMM"#
+LMM.06.S <- break.it.up.s("LMM.06")#
+LMM.06.S$Struct <- "Structure"#
+LMM.06.S$Herit <- 0.6#
+LMM.06.S$Type <- "FaST-LMM"#
+#
+LMM.03.N <- break.it.up.n("LMM.03")#
+LMM.03.N$Struct <- "None"#
+LMM.03.N$Herit <- 0.3#
+LMM.03.N$Type <- "FasT-LMM"#
+LMM.04.N <- break.it.up.n("LMM.04")#
+LMM.04.N$Struct <- "None"#
+LMM.04.N$Herit <- 0.4#
+LMM.04.N$Type <- "FaST-LMM"#
+LMM.06.N <- break.it.up.n("LMM.06")#
+LMM.06.N$Struct <- "None"#
+LMM.06.N$Herit <- 0.6#
+LMM.06.N$Type <- "FaST-LMM"
+total <- rbind(LMM.03.N,LMM.04.N,LMM.06.N,LMM.03.S,LMM.04.S,LMM.06.S)
+total$AUC[which(total$Herit==0.3)]
+total$AUC[which(total$Herit==0.3 & total$Struct=="None")]
+require(sciplot)
+pdf(file="LMM_AUC.pdf")#
+lineplot.CI(total$Herit[which(total$Type=="FaST-LMM")],total$AUC[which(total$Type=="FaST-LMM")],total$Struct[which(total$Type=="FaST-LMM")],main="FaST-LMM: Change in Mean AUC",xlab="Heritability",ylab="Mean AUC",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="LMM_MAE.pdf")#
+lineplot.CI(total$Herit[which(total$Type=="FaST-LMM")],total$MAE[which(total$Type=="FaST-LMM")],total$Struct[which(total$Type=="FaST-LMM")],main="FaST-LMM: Change in Mean MAE",xlab="Heritability",ylab="Mean MAE",trace.label="Pop. Structure")#
+dev.off()
+lineplot.CI(total$Herit,total$AUC,total$Struct)
+write.csv(total,file="FaST-LMM-Validate.csv",row.names=F,col.names=F)
+K <- total#
+#
+pdf(file="FaST-LMM_MAE_vs_AUC.pdf")#
+plot(x=K$MAE, y=K$AUC, main="FaST-LMM: Regression Performance vs.\nClassifier Performance",ylab="Classifier Performance (AUC)",xlab="Regression Performance (MAE)")#
+abline(lm(K$AUC~K$MAE))#
+dev.off()#
+#
+require(car)#
+pdf(file="FaST-LMM_MAE_vs_AUC_With_Groups.pdf")#
+scatterplot(K$AUC ~ K$MAE | K$Struct, #
+   xlab="Regression Performance (MAE)", ylab="Classifier Performance (AUC)", #
+   main="FaST-LMM: AUC as a Function\nof MAE by Pop. Structure",smoother=FALSE,legend.title="Structure?",pch=16:17)#
+dev.off()#
+# ^ Are these lines different?#
+fit1 <- lm(K$AUC[which(K$Struct=="Structure")]~K$MAE[which(K$Struct=="Structure")])#
+fit2 <- lm(K$AUC[which(K$Struct=="None")]~K$MAE[which(K$Struct=="None")])#
+# t-test to determine#
+numerator <- -0.305127+0.34125#
+denominator <- sqrt(0.046683**2+0.08105**2)#
+cat(paste("\nThe t-score is:",numerator/denominator))#
+cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+PLINK.03 <- read.table(file="PLINK-03-NoMissing-Results.txt",header=TRUE)#
+PLINK.04 <- read.table(file="PLINK-04-NoMissing-Results.txt",header=TRUE)#
+PLINK.06 <- read.table(file="PLINK-06-NoMissing-Results.txt",header=TRUE)
+PLINK.03.S <- break.it.up.s("PLINK.03")#
+PLINK.03.S$Struct <- "Structure"#
+PLINK.03.S$Herit <- 0.3#
+PLINK.03.S$Type <- "PLINK"#
+PLINK.04.S <- break.it.up.s("PLINK.04")#
+PLINK.04.S$Struct <- "Structure"#
+PLINK.04.S$Herit <- 0.4#
+PLINK.04.S$Type <- "PLINK"#
+PLINK.06.S <- break.it.up.s("PLINK.06")#
+PLINK.06.S$Struct <- "Structure"#
+PLINK.06.S$Herit <- 0.6#
+PLINK.06.S$Type <- "PLINK"#
+#
+PLINK.03.N <- break.it.up.n("PLINK.03")#
+PLINK.03.N$Struct <- "None"#
+PLINK.03.N$Herit <- 0.3#
+PLINK.03.N$Type <- "PLINK"#
+PLINK.04.N <- break.it.up.n("PLINK.04")#
+PLINK.04.N$Struct <- "None"#
+PLINK.04.N$Herit <- 0.4#
+PLINK.04.N$Type <- "PLINK"#
+PLINK.06.N <- break.it.up.n("PLINK.06")#
+PLINK.06.N$Struct <- "None"#
+PLINK.06.N$Herit <- 0.6#
+PLINK.06.N$Type <- "PLINK"
+other <- rbind(PLINK.03.N,PLINK.04.N,PLINK.06.N,PLINK.03.S,PLINK.04.S,PLINK.06.S)
+write.csv(other,file="PLINK-Validate.csv")
+total
+Load in file as total#
+#
+require(sciplot)#
+pdf(file="PLINK_AUC.pdf")#
+lineplot.CI(total$Herit,total$AUC,total$Struct,main="PLINK: Change in Mean AUC",xlab="Heritability",ylab="Mean AUC",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE.pdf")#
+lineplot.CI(total$Herit,total$MAE,total$Struct,main="PLINK: Change in Mean MAE",xlab="Heritability",ylab="Mean MAE",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE_vs_AUC.pdf")#
+plot(x=total$MAE, y= total$AUC, main="PLINK: Regression Performance vs.\nClassifier Performance",ylab="Classifier Performance (AUC)",xlab="Regression Performance (MAE)")#
+abline(lm(total$AUC~ total$MAE))#
+dev.off()#
+#
+require(car)#
+pdf(file="PLINK_MAE_vs_AUC_With_Groups.pdf")#
+scatterplot(total$AUC ~ total$MAE | total$Struct, #
+   xlab="Regression Performance (MAE)", ylab="Classifier Performance (AUC)", #
+   main="PLINK: AUC as a Function\nof MAE by Pop. Structure",smoother=FALSE,legend.title="Structure?",pch=16:17)#
+dev.off()#
+# ^ Are these lines different?#
+fit1 <- lm(total$AUC[which(total$Struct=="Structure")]~total$MAE[which(total$Struct=="Structure")])#
+fit2 <- lm(total$AUC[which(total$Struct=="None")]~total$MAE[which(total$Struct=="None")])#
+# t-test to determine#
+#numerator <- -0.085693+0.162923#
+#denominator <- sqrt(0.008802**2+0.009075**2)#
+#cat(paste("The t-score is:",numerator/denominator))#
+#cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+total <- read.csv(file="FaST-LMM-Validate.csv",header=T)
+Load in file as total#
+#
+require(sciplot)#
+pdf(file="PLINK_AUC.pdf")#
+lineplot.CI(total$Herit,total$AUC,total$Struct,main="PLINK: Change in Mean AUC",xlab="Heritability",ylab="Mean AUC",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE.pdf")#
+lineplot.CI(total$Herit,total$MAE,total$Struct,main="PLINK: Change in Mean MAE",xlab="Heritability",ylab="Mean MAE",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE_vs_AUC.pdf")#
+plot(x=total$MAE, y= total$AUC, main="PLINK: Regression Performance vs.\nClassifier Performance",ylab="Classifier Performance (AUC)",xlab="Regression Performance (MAE)")#
+abline(lm(total$AUC~ total$MAE))#
+dev.off()#
+#
+require(car)#
+pdf(file="PLINK_MAE_vs_AUC_With_Groups.pdf")#
+scatterplot(total$AUC ~ total$MAE | total$Struct, #
+   xlab="Regression Performance (MAE)", ylab="Classifier Performance (AUC)", #
+   main="PLINK: AUC as a Function\nof MAE by Pop. Structure",smoother=FALSE,legend.title="Structure?",pch=16:17)#
+dev.off()#
+# ^ Are these lines different?#
+fit1 <- lm(total$AUC[which(total$Struct=="Structure")]~total$MAE[which(total$Struct=="Structure")])#
+fit2 <- lm(total$AUC[which(total$Struct=="None")]~total$MAE[which(total$Struct=="None")])#
+# t-test to determine#
+#numerator <- -0.085693+0.162923#
+#denominator <- sqrt(0.008802**2+0.009075**2)#
+#cat(paste("The t-score is:",numerator/denominator))#
+#cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+total <- read.csv(file="PLINK-Validate.csv",header=T)
+Load in file as total#
+#
+require(sciplot)#
+pdf(file="PLINK_AUC.pdf")#
+lineplot.CI(total$Herit,total$AUC,total$Struct,main="PLINK: Change in Mean AUC",xlab="Heritability",ylab="Mean AUC",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE.pdf")#
+lineplot.CI(total$Herit,total$MAE,total$Struct,main="PLINK: Change in Mean MAE",xlab="Heritability",ylab="Mean MAE",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE_vs_AUC.pdf")#
+plot(x=total$MAE, y= total$AUC, main="PLINK: Regression Performance vs.\nClassifier Performance",ylab="Classifier Performance (AUC)",xlab="Regression Performance (MAE)")#
+abline(lm(total$AUC~ total$MAE))#
+dev.off()#
+#
+require(car)#
+pdf(file="PLINK_MAE_vs_AUC_With_Groups.pdf")#
+scatterplot(total$AUC ~ total$MAE | total$Struct, #
+   xlab="Regression Performance (MAE)", ylab="Classifier Performance (AUC)", #
+   main="PLINK: AUC as a Function\nof MAE by Pop. Structure",smoother=FALSE,legend.title="Structure?",pch=16:17)#
+dev.off()#
+# ^ Are these lines different?#
+fit1 <- lm(total$AUC[which(total$Struct=="Structure")]~total$MAE[which(total$Struct=="Structure")])#
+fit2 <- lm(total$AUC[which(total$Struct=="None")]~total$MAE[which(total$Struct=="None")])#
+# t-test to determine#
+#numerator <- -0.085693+0.162923#
+#denominator <- sqrt(0.008802**2+0.009075**2)#
+#cat(paste("The t-score is:",numerator/denominator))#
+#cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+total <- read.csv(file="FaST-LMM-Validate.csv",header=T)
+Load in file as total#
+#
+require(sciplot)#
+pdf(file="PLINK_AUC.pdf")#
+lineplot.CI(total$Herit,total$AUC,total$Struct,main="PLINK: Change in Mean AUC",xlab="Heritability",ylab="Mean AUC",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE.pdf")#
+lineplot.CI(total$Herit,total$MAE,total$Struct,main="PLINK: Change in Mean MAE",xlab="Heritability",ylab="Mean MAE",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE_vs_AUC.pdf")#
+plot(x=total$MAE, y= total$AUC, main="PLINK: Regression Performance vs.\nClassifier Performance",ylab="Classifier Performance (AUC)",xlab="Regression Performance (MAE)")#
+abline(lm(total$AUC~ total$MAE))#
+dev.off()#
+#
+require(car)#
+pdf(file="PLINK_MAE_vs_AUC_With_Groups.pdf")#
+scatterplot(total$AUC ~ total$MAE | total$Struct, #
+   xlab="Regression Performance (MAE)", ylab="Classifier Performance (AUC)", #
+   main="PLINK: AUC as a Function\nof MAE by Pop. Structure",smoother=FALSE,legend.title="Structure?",pch=16:17)#
+dev.off()#
+# ^ Are these lines different?#
+fit1 <- lm(total$AUC[which(total$Struct=="Structure")]~total$MAE[which(total$Struct=="Structure")])#
+fit2 <- lm(total$AUC[which(total$Struct=="None")]~total$MAE[which(total$Struct=="None")])#
+# t-test to determine#
+#numerator <- -0.085693+0.162923#
+#denominator <- sqrt(0.008802**2+0.009075**2)#
+#cat(paste("The t-score is:",numerator/denominator))#
+#cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+total <- read.csv(file="PLINK-Validate.csv",header=T)
+Load in file as total#
+#
+require(sciplot)#
+pdf(file="PLINK_AUC.pdf")#
+lineplot.CI(total$Herit,total$AUC,total$Struct,main="PLINK: Change in Mean AUC",xlab="Heritability",ylab="Mean AUC",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE.pdf")#
+lineplot.CI(total$Herit,total$MAE,total$Struct,main="PLINK: Change in Mean MAE",xlab="Heritability",ylab="Mean MAE",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="PLINK_MAE_vs_AUC.pdf")#
+plot(x=total$MAE, y= total$AUC, main="PLINK: Regression Performance vs.\nClassifier Performance",ylab="Classifier Performance (AUC)",xlab="Regression Performance (MAE)")#
+abline(lm(total$AUC~ total$MAE))#
+dev.off()#
+#
+require(car)#
+pdf(file="PLINK_MAE_vs_AUC_With_Groups.pdf")#
+scatterplot(total$AUC ~ total$MAE | total$Struct, #
+   xlab="Regression Performance (MAE)", ylab="Classifier Performance (AUC)", #
+   main="PLINK: AUC as a Function\nof MAE by Pop. Structure",smoother=FALSE,legend.title="Structure?",pch=16:17)#
+dev.off()#
+# ^ Are these lines different?#
+fit1 <- lm(total$AUC[which(total$Struct=="Structure")]~total$MAE[which(total$Struct=="Structure")])#
+fit2 <- lm(total$AUC[which(total$Struct=="None")]~total$MAE[which(total$Struct=="None")])#
+# t-test to determine#
+#numerator <- -0.085693+0.162923#
+#denominator <- sqrt(0.008802**2+0.009075**2)#
+#cat(paste("The t-score is:",numerator/denominator))#
+#cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+total <- read.csv(file="FaST-LMM-Validate.csv",header=T)
+Load in file as total#
+#
+require(sciplot)#
+pdf(file="LMM_AUC.pdf")#
+lineplot.CI(total$Herit,total$AUC,total$Struct,main="FaST-LMM: Change in Mean AUC",xlab="Heritability",ylab="Mean AUC",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="LMM_MAE.pdf")#
+lineplot.CI(total$Herit,total$MAE,total$Struct,main="FaST-LMM: Change in Mean MAE",xlab="Heritability",ylab="Mean MAE",trace.label="Pop. Structure")#
+dev.off()#
+#
+pdf(file="LMM_MAE_vs_AUC.pdf")#
+plot(x=total$MAE, y= total$AUC, main="FaST-LMM: Regression Performance vs.\nClassifier Performance",ylab="Classifier Performance (AUC)",xlab="Regression Performance (MAE)")#
+abline(lm(total$AUC~ total$MAE))#
+dev.off()#
+#
+require(car)#
+pdf(file="LMM_MAE_vs_AUC_With_Groups.pdf")#
+scatterplot(total$AUC ~ total$MAE | total$Struct, #
+   xlab="Regression Performance (MAE)", ylab="Classifier Performance (AUC)", #
+   main="FaST-LMM: AUC as a Function\nof MAE by Pop. Structure",smoother=FALSE,legend.title="Structure?",pch=16:17)#
+dev.off()#
+# ^ Are these lines different?#
+fit1 <- lm(total$AUC[which(total$Struct=="Structure")]~total$MAE[which(total$Struct=="Structure")])#
+fit2 <- lm(total$AUC[which(total$Struct=="None")]~total$MAE[which(total$Struct=="None")])#
+# t-test to determine#
+#numerator <- -0.085693+0.162923#
+#denominator <- sqrt(0.008802**2+0.009075**2)#
+#cat(paste("The t-score is:",numerator/denominator))#
+#cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+LMM.03 <- read.table(file="LMM-03-NoMissing-Results.txt",header=TRUE)#
+LMM.04 <- read.table(file="LMM-04-NoMissing-Results.txt",header=TRUE)#
+LMM.06 <- read.table(file="LMM-06-NoMissing-Results.txt",header=TRUE)
+which.type <- function(name) {#
+	name <- as.character(name)#
+	name <- unlist(strsplit(name, split="_", fixed=TRUE))#
+	if ("PheHasStruct" %in% name) {#
+		return("S")#
+	} else {#
+		return("N")#
+	}#
+}#
+#
+is.s <- function(name) {#
+	which.type(name) == "S"#
+}#
+#
+is.n <- function(name) {#
+	which.type(name) == "N"#
+}#
+#
+break.it.up.s <- function(data) {#
+	name <- eval(parse(text=paste(data, "$Name", sep="")))#
+	new.data <- eval(parse(text=data))[sapply(name, is.s), ]#
+	return(new.data)#
+}#
+#
+break.it.up.n <- function(data) {#
+	name <- eval(parse(text=paste(data, "$Name", sep="")))#
+	new.data <- eval(parse(text=data))[sapply(name, is.n), ]#
+	return(new.data)#
+}
+LMM.03.S <- break.it.up.s("LMM.03")#
+LMM.03.S$Struct <- "Structure"#
+LMM.03.S$Herit <- 0.3#
+LMM.03.S$Type <- "FaST-LMM"#
+LMM.04.S <- break.it.up.s("LMM.04")#
+LMM.04.S$Struct <- "Structure"#
+LMM.04.S$Herit <- 0.4#
+LMM.04.S$Type <- "FaST-LMM"#
+LMM.06.S <- break.it.up.s("LMM.06")#
+LMM.06.S$Struct <- "Structure"#
+LMM.06.S$Herit <- 0.6#
+LMM.06.S$Type <- "FaST-LMM"#
+#
+LMM.03.N <- break.it.up.n("LMM.03")#
+LMM.03.N$Struct <- "None"#
+LMM.03.N$Herit <- 0.3#
+LMM.03.N$Type <- "FasT-LMM"#
+LMM.04.N <- break.it.up.n("LMM.04")#
+LMM.04.N$Struct <- "None"#
+LMM.04.N$Herit <- 0.4#
+LMM.04.N$Type <- "FaST-LMM"#
+LMM.06.N <- break.it.up.n("LMM.06")#
+LMM.06.N$Struct <- "None"#
+LMM.06.N$Herit <- 0.6#
+LMM.06.N$Type <- "FaST-LMM"
+total <- rbind(LMM.03.S,LMM.04.S,LMM.06.S,LMM.03.N,LMM.04.N,LMM.06.N)
+write.csv(total,"FaST-LMM-Validate.csv",row.names=F)
+source("/Users/dustin/Desktop/SyngentaReportData/MakeGraphs-LMM.R")
+head(total)
+fit1 <- lm(total$AUC[which(total$Struct=="Structure")]~total$MAE[which(total$Struct=="None")])
+fit1 <- lm(total$AUC[which(total$Struct=="Structure")]~total$MAE[which(total$Struct=="Structure")])
+fit2 <- lm(total$AUC[which(total$Struct=="None")]~total$MAE[which(total$Struct=="None")])
+summary(fit1)
+summary(fit2)
+num <- 0.918694-0.91409
+den <- sqrt(0.008715**2+0.01069**2)
+num/den
+pt(0.3338096,)
+nrow(total$AUC[which(total$Struct=="Structure")])
+length(total$AUC[which(total$Struct=="Structure")])
+length(total$AUC[which(total$Struct=="None")])
+pt(0.3338096,145)
+pt(0.3338096,295)
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+require(sciplot)
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+total$Type
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+total$Type
+require(sciplot)#
+plink <- read.csv(file="PLINK-Validate.csv",header=TRUE)#
+lmm <- read.csv(file="FaST-LMM-Validate.csv",header=TRUE)#
+total <- rbind(plink, lmm)
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+lineplot.CI(total$Herit,total$H2,total$Type)
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+lineplot.CI(total$Herit,total$MAE,total$Struct)
+lineplot.CI(total$Herit,total$MAE,total$Type)
+library(suRtex)
+?suRtex
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+boxplot(total$AUC)
+?boxplot
+boxplot(total$AUC~total$Type)
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+mean(total$AUC[which(total$Type=="PLINK")])
+mean(total$AUC[which(total$Type=="FaST-LMM")])
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+lineplot.CI(total$Herit,total$AUC,total$Type,main="Comparing FaSt-LMM and PLINK:\nAUC as a measure of Classifier Performance",xlab="Heritability",ylab="Mean AUC",trace.label=NULL)
+lineplot.CI(total$Herit)
+lineplot.CI(total$Herit,total$AUC)
+ls()
+lineplot.CI(total$Herit,total$AUC)
+require(sciplot)
+lineplot.CI(total$Herit,total$AUC)
+lineplot.CI(total$Herit(which(total$Type=="PLINK")),total$AUC(which(total$Type=="PLINK")))
+lineplot.CI(total$Herit[which(total$Type=="PLINK")],total$AUC[which(total$Type=="PLINK")])
+lineplot.CI(total$Herit[which(total$Type=="FaST-LMM")],total$AUC[which(total$Type=="FaST-LMM")])
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="None", "PLINK with No Structure",NA)
+total$every
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="None", "PLINK with No Structure",NA)#
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="Structure", "PLINK with Structure",total$every)#
+total$every <- ifelse(total$Type=="FaST-LMM" & total$Struct=="Structure", "FaST-LMM with Structure",total$every)#
+total$every <- ifelse(total$Type=="FaST-LMM" & total$Struct=="None", "FaST-LMM with No  Structure",total$every)
+total$every
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="None", "PLINK with No Structure",NA)#
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="Structure", "PLINK with Structure",total$every)#
+total$every <- ifelse(total$Type=="FaST-LMM" & total$Struct=="Structure", "FaST-LMM with Structure",total$every)#
+total$every <- ifelse(total$Type=="FaST-LMM" & total$Struct=="None", "FaST-LMM with No Structure",total$every)
+total$every
+lineplot.CI(total$Herit,total$AUC,total$every)
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="None", "PLINK",NA)#
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="Structure", "PLINK (*)",total$every)#
+total$every <- ifelse(total$Type=="FaST-LMM" & total$Struct=="Structure", "FaST-LMM (*)",total$every)#
+total$every <- ifelse(total$Type=="FaST-LMM" & total$Struct=="None", "FaST-LMM with No Structure",total$every)#
+#pdf(file="Compare_AUC.pdf")#
+lineplot.CI(total$Herit,total$AUC,total$every)
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="None", "PLINK",NA)#
+total$every <- ifelse(total$Type=="PLINK" & total$Struct=="Structure", "PLINK (*)",total$every)#
+total$every <- ifelse(total$Type=="FaST-LMM" & total$Struct=="Structure", "FaST-LMM (*)",total$every)#
+total$every <- ifelse(total$Type=="FaST-LMM" & total$Struct=="None", "FaST-LMM",total$every)#
+#pdf(file="Compare_AUC.pdf")#
+lineplot.CI(total$Herit,total$AUC,total$every)
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+?lineplot.CI
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+?lineplot.CI
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+t.test(total$AUC~total$Type)
+anova(fit(total$AUC~total$Type))
+anova(lm(total$AUC~total$Type))
+?t.test
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+anova(lm(total$H~total$Type))
+qt(0.975,145)
+qt(0.975,586)
+length(total$AUC[which(total$Type=="PLINK")])
+length(total$AUC[which(total$Type=="FaST-LMM")])
+qt(0.975,290)
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+anova(lm(total$AUC~as.factor(total$Type)))
+anova(lm(total$H~as.factor(total$Type)))
+test1 <- total$AUC[which(total$Type=="FaST-LMM" & total$Struct=="None" & total$Herit==0.3)]
+test2 <- total$AUC[which(total$Type=="FaST-LMM" & total$Struct=="Structure" & total$Herit==0.3)]
+t.test(test1,test2)
+source("/Users/dustin/Desktop/SyngentaReportData/Compare.R")
+numerator <- -0.305127+0.34125#
+denominator <- sqrt(0.046683**2+0.08105**2)#
+cat(paste("\nThe t-score is:",numerator/denominator))#
+cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+numerator <- -0.085693+0.162923#
+denominator <- sqrt(0.008802**2+0.009075**2)#
+cat(paste("The t-score is:",numerator/denominator))#
+cat(paste("\nWith a p-value of",pt(numerator/denominator,145,lower.tail=FALSE)))
+10**-9
+options(scipen=999)
+10**-9
+require(rPlant)
+GetJobHistory()
+Validate("dalanders","Shadow@3876")
+GetJobHistory()
+times <- read.csv(file="/Users/Dustin/Desktop/PLINKtimes.txt")
+times <- read.table(file="/Users/Dustin/Desktop/PLINKtimes.txt")
+times
+times <- t(times)
+times
+times <- read.csv(file="/Users/Dustin/Desktop/PLINKtimes.csv")
+times
+times <- read.table(file="/Users/Dustin/Desktop/PLINKtimes.csv",sep=",")
+times
+times2 <- t(times)
+times2
+histogram(times2)
+hist(times2)
+write(times2,"times.csv")
+write.csv(times2,"times.csv",row.names=F,col.names=F)
+mean(times2)
+se(times2)
+hist(times2)
+setwd("/users/dustin/documents/demonstrate")
+require(Demonstrate)
+Demonstrate("")
+Demonstrate("/users/dustin/documents/demonstrate")
+test <- Demonstrate("/users/dustin/documents/demonstrate")
+test
+?Demonstrate
+help(Demonstrate)
+test <- Demonstrate("/users/dustin/documents/demonstrate",make.AUC.plot=T,"My AUC Plot",T,"My MAE Plot")
+test
+test <- Demonstrate("/users/dustin/documents/demonstrate",make.AUC.plot=T,"My AUC Plot",T,"My MAE Plot",struct.strings=list("PheHasStruct","PheNPStructure"),struct.values=list("structure","Nope"))
+test
+test <- Demonstrate("/users/dustin/documents/demonstrate",make.AUC.plot=T,"My AUC Plot",T,"My MAE Plot",struct.strings=list("PheHasStruct","PheNPStructure"),struct.values=list("structure",FALSE))
+test
+test <- Demonstrate("/users/dustin/documents/demonstrate",make.AUC.plot=T,"My AUC Plot",T,"My MAE Plot",struct.strings=list("PheHasStruct","PheNPStructure"),struct.values=list("structure","none"))
+test
+test <- Demonstrate("/users/dustin/documents/demonstrate",make.AUC.plot=T,"My AUC Plot",T,"My MAE Plot",struct.strings=list("PheHasStruct","PheNPStructure"),struct.values=list("structure","none"))
+test
+test <- Demonstrate("/users/dustin/documents/demonstrate",make.AUC.plot=T,"My AUC Plot",T,"My MAE Plot",struct.strings=list("PheHasStruct","PheNPStruct"),struct.values=list("structure","POOOOOP"))
+test
+fit <- lm(test$AUC~as.factor(test$Structure))
+summary(fit)
+fit <- lm(test$AUC~as.factor(test$Herit))
+summary(fit)
+quartz()
+plot(0,0)
+abline(a=0.81)
+abline(a=0,b=0.81)
+abline(a=0,b=0.81+0.0165)
+abline(a=0,b=0.81+0.031746)
